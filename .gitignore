@@ -1,16 +1,21 @@
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-.Python
+# Environments
 .venv/
-env/
 venv/
 
-# Streamlit
-.streamlit/
+# Python cache
+__pycache__/
+*.pyc
 
-# OS
+# Streamlit secrets (não versionar)
+.streamlit/secrets.toml
+
+# SO junk
 .DS_Store
-Thumbs.db
+
+# Planilhas temporárias do Excel
+data/~$*.xlsx
+
+# Opcional: versionar apenas o arquivo principal de dados
+# data/*.xlsx
+# !data/valores.xlsx
+.venv
