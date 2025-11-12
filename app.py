@@ -45,7 +45,10 @@ def _normalize_column(column: str) -> str:
     return "_".join(base.split())
 
 
-.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False)
+def load_inventory(path: Path) -> pd.DataFrame:
+    ...
+
 def load_inventory(path: Path) -> pd.DataFrame:
     df = pd.read_excel(path)
     df = df.rename(columns={col: _normalize_column(col) for col in df.columns})
@@ -602,6 +605,7 @@ def render():
 
 if __name__ == "__main__":
     render()
+
 
 
 
