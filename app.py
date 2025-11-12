@@ -45,7 +45,7 @@ def _normalize_column(column: str) -> str:
     return "_".join(base.split())
 
 
-@st.cache_data(show_spinner=False)
+.cache_data(show_spinner=False)
 def load_inventory(path: Path) -> pd.DataFrame:
     df = pd.read_excel(path)
     df = df.rename(columns={col: _normalize_column(col) for col in df.columns})
@@ -95,11 +95,15 @@ def load_inventory(path: Path) -> pd.DataFrame:
     return df
 
 
+DATA_PATH = Path(__file__).parent / "data" / "valores.xlsx"
+
 @st.cache_data(show_spinner=False)
-def load_logo_asset(path: Path) -> str:
+def load_inventory(path: Path) -> pd.DataFrame:
     if not path.exists():
-        return ""
-    return base64.b64encode(path.read_bytes()).decode("utf-8")
+        st.error(f"Arquivo {path} não encontrado. Suba valores.xlsx na pasta data/ do repositório.")
+        st.stop()
+    return pd.read_excel(path)
+
 
 
 def compute_insights(df: pd.DataFrame) -> Dict[str, float]:
@@ -598,6 +602,7 @@ def render():
 
 if __name__ == "__main__":
     render()
+
 
 
 
