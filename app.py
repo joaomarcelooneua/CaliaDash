@@ -77,6 +77,8 @@ def load_inventory(path: Path | None = None) -> pd.DataFrame:
         "tipo_do_item": "tipo_item",
         "categoria": "categoria",
         "valor_medio_unitario": "valor_unitario",
+        "valor_unitario": "valor_unitario",
+        "valor_unitario_r": "valor_unitario",
         "depreciacao_anual_mercado": "perc_depreciacao",
         "vida_util_anos_mercado": "vida_util_anos",
         "depreciacao_anual_unitaria_r": "depreciacao_unitaria",
