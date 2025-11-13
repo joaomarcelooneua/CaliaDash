@@ -88,6 +88,16 @@ def load_inventory(path: Path | None = None) -> pd.DataFrame:
     df["valor_unitario"] = df["valor_unitario"].astype(float)
     if "depreciacao_unitaria" in df.columns:
         df["depreciacao_unitaria"] = df["depreciacao_unitaria"].astype(float)
+    # Garante uma coluna canônica de depreciação em R$ usada no restante do app
+    dep_base = next((c for c in [
+        "depreciacao_unitaria",
+        "depreciacao_anual_unitaria_r",
+    ] if c in df.columns), None)
+    if dep_base is not None:
+        df["dep_referencia"] = df[dep_base].astype(float)
+    else:
+        # cria coluna zerada para evitar KeyError nas visualizações
+        df["dep_referencia"] = 0.0
     df["categoria"] = df["categoria"].str.strip()
     df["numero_inventario"] = (
         df["numero_inventario"].fillna("Sem inventário").astype(str).str.strip()
