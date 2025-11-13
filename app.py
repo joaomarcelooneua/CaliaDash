@@ -53,13 +53,7 @@ def _normalize_column(column: str) -> str:
 def load_inventory(path: Path | None = None) -> pd.DataFrame:
     target_path = Path(path) if path else DATA_PATH
 
-    try:
-        st.caption(f"cwd = {os.getcwd()}")
-        st.caption(f"repo files = {os.listdir('.')}")
-        st.caption(f"data exists? {Path('data').exists()}")
-        st.caption(f"valores.xlsx exists? {Path('data/valores.xlsx').exists()}")
-    except Exception:
-        pass
+    # Diagnostics removed for production UI cleanliness
 
     if not target_path.exists():
         st.error(f"Arquivo não encontrado em: {target_path}")
@@ -257,6 +251,13 @@ def style_streamlit():
         """,
         unsafe_allow_html=True,
     )
+    # CSS externo com a identidade da Calia
+    try:
+        css_path = Path("assets/styles.css")
+        if css_path.exists():
+            st.markdown(f"<style>{css_path.read_text(encoding='utf-8')}</style>", unsafe_allow_html=True)
+    except Exception:
+        pass
 
 
 def metric_block(label: str, value: str, subtext: str = "") -> None:
