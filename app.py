@@ -111,12 +111,18 @@ def load_inventory(path: Path) -> pd.DataFrame:
 
 def compute_insights(df: pd.DataFrame) -> Dict[str, float]:
     total_items = len(df) or 1
-    total_dep = (
-        df.get("Depreciação anual unitária (R$)")
-        or df.get("Depreciacao anual_% (mercado)")
-        or pd.Series([0]*len(df))
-        ).sum(
-    )
+    dep_candidates = [
+        "dep_referencia",
+        "depreciacao_unitaria",
+        "depreciacao_anual_unitaria_r",
+        "Depreciação anual unitária (R$)",
+        "Depreciacao anual_% (mercado)",
+    ]
+    dep_col = next((col for col in dep_candidates if col in df.columns), None)
+    if dep_col:
+        total_dep = float(df[dep_col].sum())
+    else:
+        total_dep = 0.0
 
     patr_total = df["valor_unitario"].sum()
     avg_dep = total_dep / total_items
