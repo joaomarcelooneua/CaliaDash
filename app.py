@@ -1,6 +1,7 @@
 ﻿from __future__ import annotations
 
 import base64
+import os
 import re
 import unicodedata
 from pathlib import Path
@@ -21,11 +22,14 @@ CARD_ALT = "#1E1E1E"
 TEXT_LIGHT = "#F8F8F8"
 TEXT_MUTED = "#CBCBCB"
 
-DATA_PATH = Path("data") / "valores.xlsx"
+DATA_PATH = Path(__file__).resolve().parent / "data" / "valores.xlsx"
 LOGO_PATH = Path("assets") / "calia-logo.svg"
-MAC_REFERENCE_DEPRECIATION = 2145
-LICENSE_REFERENCE_DEPRECIATION = 1200
 LOW_COST_THRESHOLD = 800
+DEPRECIACAO_VALUE_COLUMNS = [
+    "depreciacao_unitaria",
+    "depreciacao_anual_unitaria_r",
+    "Deprecia\u00e7\u00e3o anual unit\u00e1ria (R$)",
+]
 
 
 # -----------------------------------------------------------------------------
@@ -46,11 +50,22 @@ def _normalize_column(column: str) -> str:
 
 
 @st.cache_data(show_spinner=False)
-def load_inventory(path: Path) -> pd.DataFrame:
-    ...
+def load_inventory(path: Path | None = None) -> pd.DataFrame:
+    target_path = Path(path) if path else DATA_PATH
 
-def load_inventory(path: Path) -> pd.DataFrame:
-    df = pd.read_excel(path)
+    try:
+        st.caption(f"cwd = {os.getcwd()}")
+        st.caption(f"repo files = {os.listdir('.')}")
+        st.caption(f"data exists? {Path('data').exists()}")
+        st.caption(f"valores.xlsx exists? {Path('data/valores.xlsx').exists()}")
+    except Exception:
+        pass
+
+    if not target_path.exists():
+        st.error(f"Arquivo não encontrado em: {target_path}")
+        st.stop()
+
+    df = pd.read_excel(target_path)
     df = df.rename(columns={col: _normalize_column(col) for col in df.columns})
 
     rename_map = {
@@ -69,7 +84,8 @@ def load_inventory(path: Path) -> pd.DataFrame:
     df = df.rename(columns=rename_map)
 
     df["valor_unitario"] = df["valor_unitario"].astype(float)
-    df["depreciacao_unitaria"] = df["depreciacao_unitaria"].astype(float)
+    if "depreciacao_unitaria" in df.columns:
+        df["depreciacao_unitaria"] = df["depreciacao_unitaria"].astype(float)
     df["categoria"] = df["categoria"].str.strip()
     df["numero_inventario"] = (
         df["numero_inventario"].fillna("Sem inventário").astype(str).str.strip()
@@ -83,10 +99,6 @@ def load_inventory(path: Path) -> pd.DataFrame:
     df["tem_inventario"] = ~df["numero_inventario"].str.contains("sem", case=False, na=False)
     df["rastreados"] = df["tem_usuario"] & df["tem_inventario"]
 
-    df["dep_referencia"] = df["depreciacao_unitaria"]
-    df.loc[df["is_mac"], "dep_referencia"] = MAC_REFERENCE_DEPRECIATION
-    df.loc[df["is_license"], "dep_referencia"] = LICENSE_REFERENCE_DEPRECIATION
-
     def classify_priority(row: pd.Series) -> str:
         if row["is_mac"] or row["is_license"]:
             return "Premium controlado"
@@ -96,17 +108,6 @@ def load_inventory(path: Path) -> pd.DataFrame:
 
     df["prioridade"] = df.apply(classify_priority, axis=1)
     return df
-
-
-DATA_PATH = Path(__file__).parent / "data" / "valores.xlsx"
-
-@st.cache_data(show_spinner=False)
-def load_inventory(path: Path) -> pd.DataFrame:
-    if not path.exists():
-        st.error(f"Arquivo {path} não encontrado. Suba valores.xlsx na pasta data/ do repositório.")
-        st.stop()
-    return pd.read_excel(path)
-
 
 
 def compute_insights(df: pd.DataFrame) -> Dict[str, float]:
